@@ -2,15 +2,12 @@ package info.harizanov.orderbook.client;
 
 import info.harizanov.orderbook.domain.message.encoder.KrakenSubscribeMessageEncoder;
 import jakarta.websocket.*;
-import org.glassfish.tyrus.core.TyrusEndpointWrapper;
 import org.glassfish.tyrus.core.coder.*;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Flow;
@@ -24,18 +21,18 @@ class KrakenClientTest {
 
         final List<Class<? extends Decoder>> decoders = new ArrayList<>();
         // decoders.addAll(PrimitiveDecoders.ALL);
-//        decoders.add(NoOpTextCoder.class);
-//        decoders.add(NoOpByteBufferCoder.class);
-//        decoders.add(NoOpByteArrayCoder.class);
-//        decoders.add(ReaderDecoder.class);
-//        decoders.add(InputStreamDecoder.class);
+        decoders.add(NoOpTextCoder.class);
+        decoders.add(NoOpByteBufferCoder.class);
+        decoders.add(NoOpByteArrayCoder.class);
+        decoders.add(ReaderDecoder.class);
+        decoders.add(InputStreamDecoder.class);
 
         final ClientEndpointConfig clientEndpointConfig = ClientEndpointConfig.Builder.create()
                 .encoders(Collections.singletonList(KrakenSubscribeMessageEncoder.class))
                 .decoders(decoders)
                 .build();
 
-        final KrakenClient client = new KrakenClient();
+        final KrakenEndpoint client = new KrakenEndpoint();
         container.connectToServer(client, clientEndpointConfig, URI.create("wss://ws.kraken.com"));
 
          client.getProducer().asFlux().doOnNext(System.out::println).blockLast();
@@ -61,6 +58,6 @@ class KrakenClientTest {
 //            }
 //        });
 
-//        Thread.sleep(10000);
+        Thread.sleep(10000);
     }
 }

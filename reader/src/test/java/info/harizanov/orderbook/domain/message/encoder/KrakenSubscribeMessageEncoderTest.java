@@ -8,6 +8,8 @@ import info.harizanov.orderbook.domain.message.request.KrakenSubscription;
 import info.harizanov.orderbook.domain.message.request.SubscriptionType;
 import org.glassfish.grizzly.utils.Pair;
 import org.junit.jupiter.api.Test;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,7 @@ class KrakenSubscribeMessageEncoderTest {
         final KrakenSubscribeMessageEncoder encoder = new KrakenSubscribeMessageEncoder();
         final KrakenSubscribeMessage krakenSubscribeMessage = KrakenSubscribeMessage
                 .builder(KrakenSubscription.builder(SubscriptionType.TICKER).build())
-                .pairs(new Pair<>(USD, ETH), new Pair<>(USD, BTC))
+                .pairs(Tuples.of(USD, ETH), Tuples.of(USD, BTC))
                 .build();
 
         // when
@@ -40,7 +42,7 @@ class KrakenSubscribeMessageEncoderTest {
         assertThat(subscriptionMessage.get("pair"), notNullValue());
 
         final List<String> expectedPairFormat = krakenSubscribeMessage.getPair().stream()
-                .map(p -> String.format("%s/%s", p.getFirst(), p.getSecond()))
+                .map(p -> String.format("%s/%s", p.getT1(), p.getT2()))
                 .toList();
 
         assertThat((List<String>) subscriptionMessage.get("pair"), hasItems(expectedPairFormat.toArray(String[]::new)));

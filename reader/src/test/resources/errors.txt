@@ -1,0 +1,2 @@
+{"errorMessage":"Malformed request","event":"error"}
+{"errorMessage":"Currency pair must be of type string","event":"subscriptionStatus","pair":"{\"t1\":\"ETH\",\"t2\":\"USD\"}","status":"error","subscription":{"name":"*"}}

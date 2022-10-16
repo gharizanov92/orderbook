@@ -2,6 +2,7 @@ package info.harizanov.orderbook.domain.message.request;
 
 import com.google.gson.annotations.SerializedName;
 import org.glassfish.grizzly.utils.Pair;
+import reactor.util.function.Tuple2;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
 public class KrakenSubscribeMessage extends KrakenRequestMessage {
     @SerializedName("reqid")
     private Integer requestId;
-    private List<Pair<KrakenCurrency, KrakenCurrency>> pair;
+    private List<Tuple2<KrakenCurrency, KrakenCurrency>> pair;
     private final KrakenSubscription subscription;
 
     private KrakenSubscribeMessage(KrakenSubscription subscription) {
@@ -32,11 +33,11 @@ public class KrakenSubscribeMessage extends KrakenRequestMessage {
         this.requestId = requestId;
     }
 
-    public List<Pair<KrakenCurrency, KrakenCurrency>> getPair() {
+    public List<Tuple2<KrakenCurrency, KrakenCurrency>> getPair() {
         return pair;
     }
 
-    public void setPair(List<Pair<KrakenCurrency, KrakenCurrency>> pair) {
+    public void setPair(List<Tuple2<KrakenCurrency, KrakenCurrency>> pair) {
         this.pair = pair;
     }
 
@@ -55,11 +56,11 @@ public class KrakenSubscribeMessage extends KrakenRequestMessage {
             this.krakenSubscribeMessage = new KrakenSubscribeMessage(subscription);
         }
 
-        public KrakenSubscribeMessageBuilder pairs(final Pair<KrakenCurrency, KrakenCurrency>... pairs) {
+        public KrakenSubscribeMessageBuilder pairs(final Tuple2<KrakenCurrency, KrakenCurrency>... pairs) {
             return pairs(Arrays.asList(pairs));
         }
 
-        public KrakenSubscribeMessageBuilder pairs(final List<Pair<KrakenCurrency, KrakenCurrency>> pairs) {
+        public KrakenSubscribeMessageBuilder pairs(final List<Tuple2<KrakenCurrency, KrakenCurrency>> pairs) {
             krakenSubscribeMessage.setPair(pairs);
             return this;
         }

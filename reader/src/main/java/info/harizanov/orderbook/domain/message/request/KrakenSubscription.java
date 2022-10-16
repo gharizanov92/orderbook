@@ -63,6 +63,18 @@ public class KrakenSubscription {
         return new KrakenSubscriptionBuilder(subscriptionType);
     }
 
+    @Override
+    public String toString() {
+        return "KrakenSubscription{" +
+                "name=" + name +
+                ", depth=" + depth +
+                ", interval=" + interval +
+                ", rateCounter=" + rateCounter +
+                ", snapshot=" + snapshot +
+                ", token='" + token + '\'' +
+                '}';
+    }
+
     public static class KrakenSubscriptionBuilder {
         KrakenSubscription subscription;
 
