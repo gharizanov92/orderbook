@@ -1,27 +1,31 @@
 package info.harizanov.orderbook.client;
 
+import info.harizanov.orderbook.event.LostConnectionEvent;
 import jakarta.websocket.*;
-import reactor.core.CorePublisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import reactor.core.publisher.Sinks;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.Flow;
 
-//@ClientEndpoint(encoders = {KrakenSubscribeMessageEncoder.class})
+import static jakarta.websocket.CloseReason.CloseCodes.NORMAL_CLOSURE;
+
 public class KrakenEndpoint extends Endpoint {
 
-    private List<CorePublisher<?>> publishers;
+    private final Logger logger = LoggerFactory.getLogger(KrakenEndpoint.class);
 
-    private Flow.Subscriber<? super String> subscriber;
-
-//    @Override
-//    public void subscribe(Flow.Subscriber<? super String> subscriber) {
-//        this.subscriber = subscriber;
-//    }
     private Sinks.Many<String> producer = Sinks.many().replay().limit(Duration.ofDays(1));
 
     private List<MessageHandler> handlers;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    public KrakenEndpoint(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -31,13 +35,27 @@ public class KrakenEndpoint extends Endpoint {
 
     @Override
     public void onClose(Session session, CloseReason closeReason) {
+        logger.error("Connection closed {}", closeReason.toString());
         producer.tryEmitComplete();
         handlers.forEach(session::removeMessageHandler);
+        applicationEventPublisher.publishEvent(new LostConnectionEvent());
     }
 
     @Override
     public void onError(Session session, Throwable err) {
         producer.tryEmitError(err);
+        restartSession(session, err);
+    }
+
+    private void restartSession(Session session, Throwable err) {
+        handlers.forEach(session::removeMessageHandler);
+        try {
+            session.close(new CloseReason(NORMAL_CLOSURE, err.getMessage()));
+        } catch (IOException e) {
+            logger.error("Unable to close session", e);
+            throw new RuntimeException(e);
+        }
+        applicationEventPublisher.publishEvent(new LostConnectionEvent());
     }
 
     public Sinks.Many<String> getProducer() {
@@ -46,14 +64,6 @@ public class KrakenEndpoint extends Endpoint {
 
     public void setProducer(Sinks.Many<String> producer) {
         this.producer = producer;
-    }
-
-    public List<CorePublisher<?>> getPublishers() {
-        return publishers;
-    }
-
-    public void setPublishers(List<CorePublisher<?>> publishers) {
-        this.publishers = publishers;
     }
 
     public List<MessageHandler> getHandlers() {

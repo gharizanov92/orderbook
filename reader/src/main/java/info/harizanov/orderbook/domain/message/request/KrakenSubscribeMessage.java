@@ -6,6 +6,7 @@ import reactor.util.function.Tuple2;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * DTO to send the initial subscribe message with
@@ -47,6 +48,19 @@ public class KrakenSubscribeMessage extends KrakenRequestMessage {
 
     public static KrakenSubscribeMessageBuilder builder(final KrakenSubscription subscription) {
         return new KrakenSubscribeMessageBuilder(subscription);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        KrakenSubscribeMessage that = (KrakenSubscribeMessage) o;
+        return Objects.equals(requestId, that.requestId) && Objects.equals(pair, that.pair) && Objects.equals(subscription, that.subscription);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(requestId, pair, subscription);
     }
 
     public static class KrakenSubscribeMessageBuilder {

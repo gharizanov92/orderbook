@@ -1,12 +1,13 @@
 package info.harizanov.orderbook.configuration;
 
 import info.harizanov.orderbook.client.KrakenEndpoint;
-import info.harizanov.orderbook.client.provider.SessionProvider;
 import info.harizanov.orderbook.domain.message.encoder.KrakenSubscribeMessageEncoder;
-import info.harizanov.orderbook.event.WSConnectEvent;
+import info.harizanov.orderbook.event.LostConnectionEvent;
 import info.harizanov.orderbook.template.KrakenTemplate;
 import jakarta.websocket.*;
 import org.glassfish.tyrus.core.coder.*;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationEventPublisher;
@@ -22,6 +23,9 @@ import java.util.List;
 
 @Configuration
 public class KrakenClientAutoConfiguration {
+
+    @Autowired
+    private BeanFactory beanFactory;
 
     @Bean("decoders")
     @ConditionalOnMissingBean(name = "decoders")
@@ -68,15 +72,10 @@ public class KrakenClientAutoConfiguration {
         return Sinks.many().replay().limit(Duration.ofDays(1));
     }
 
-//    @Bean("krakenProducer")
-//    public Flux<String> defaultProducer(final Sinks.Many<String> sink) {
-//        return sink.asFlux();
-//    }
-
     @Bean
     @ConditionalOnMissingBean(KrakenEndpoint.class)
-    public KrakenEndpoint krakenEndpoint(final List<MessageHandler> messageHandlers) {
-        final KrakenEndpoint client = new KrakenEndpoint();
+    public KrakenEndpoint krakenEndpoint(final List<MessageHandler> messageHandlers, final ApplicationEventPublisher applicationEventPublisher) {
+        final KrakenEndpoint client = new KrakenEndpoint(applicationEventPublisher);
         client.setHandlers(messageHandlers);
 
         return client;
@@ -91,8 +90,9 @@ public class KrakenClientAutoConfiguration {
         return new KrakenTemplate(endpoint, config, container, sink, applicationEventPublisher);
     }
 
-    @EventListener(WSConnectEvent.class)
-    public void onApplicationEvent(WSConnectEvent event) {
-        ((SessionProvider) event.getSource()).connect();
+    @EventListener(LostConnectionEvent.class)
+    public void onApplicationEvent(LostConnectionEvent event) {
+//        System.out.println();
+         beanFactory.getBean(KrakenTemplate.class).reconnect();
     }
 }

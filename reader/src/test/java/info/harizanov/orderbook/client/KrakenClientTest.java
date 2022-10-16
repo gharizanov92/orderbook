@@ -4,13 +4,15 @@ import info.harizanov.orderbook.domain.message.encoder.KrakenSubscribeMessageEnc
 import jakarta.websocket.*;
 import org.glassfish.tyrus.core.coder.*;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Flow;
+
+import static org.mockito.Mockito.mock;
 
 class KrakenClientTest {
 
@@ -32,7 +34,7 @@ class KrakenClientTest {
                 .decoders(decoders)
                 .build();
 
-        final KrakenEndpoint client = new KrakenEndpoint();
+        final KrakenEndpoint client = new KrakenEndpoint(mock(ApplicationEventPublisher.class));
         container.connectToServer(client, clientEndpointConfig, URI.create("wss://ws.kraken.com"));
 
          client.getProducer().asFlux().doOnNext(System.out::println).blockLast();

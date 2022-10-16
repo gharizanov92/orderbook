@@ -17,6 +17,11 @@
             <version>2.7.2</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>info.harizanov</groupId>
+            <artifactId>reader</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <properties>

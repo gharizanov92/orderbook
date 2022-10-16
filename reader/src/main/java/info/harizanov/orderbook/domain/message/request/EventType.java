@@ -4,5 +4,9 @@ import com.google.gson.annotations.SerializedName;
 
 public enum EventType {
     @SerializedName("subscribe")
-    SUBSCRIBE
+    SUBSCRIBE,
+    @SerializedName("unsubscribe")
+    UNSUBSCRIBE,
+    @SerializedName("subscriptionStatus")
+    SUBSCRIPTION_STATUS
 }

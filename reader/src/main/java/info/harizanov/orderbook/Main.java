@@ -26,9 +26,9 @@ public class Main implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         krakenTemplate.subscribeForExchange(Tuples.of(KrakenCurrency.ETH, KrakenCurrency.USD), SubscriptionType.ALL);
-
-//        krakenTemplate.getEventFeed().subscribe(System.out::println);
-//        krakenTemplate.getSubscriptionMessageFeed().doOnNext(System.out::println).blockLast();
+//        krakenTemplate.subscribeForExchange(Tuples.of(KrakenCurrency.BTC, KrakenCurrency.USD), SubscriptionType.ALL);
+//        krakenTemplate.subscribeForExchange(Tuples.of(KrakenCurrency.XBT, KrakenCurrency.USD), SubscriptionType.ALL);
+        // krakenTemplate.getEventFeed().subscribe(System.out::println);
         krakenTemplate.getTradeFeed().doOnNext(System.out::println).blockLast();
     }
 }
