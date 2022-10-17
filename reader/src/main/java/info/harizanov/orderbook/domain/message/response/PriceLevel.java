@@ -54,17 +54,25 @@ public class PriceLevel implements Comparable<PriceLevel> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PriceLevel that = (PriceLevel) o;
-        return Objects.equals(price, that.price) && Objects.equals(volume, that.volume) && Objects.equals(timestamp, that.timestamp) && Objects.equals(updateType, that.updateType);
+        return Objects.equals(price, that.price) && Objects.equals(volume, that.volume) && Objects.equals(timestamp, that.timestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(price, volume, timestamp, updateType);
+        return Objects.hash(price, volume, timestamp);
     }
 
     @Override
     public int compareTo(PriceLevel o) {
-        return o.timestamp.compareTo(this.timestamp);
+        int timeDiff = o.timestamp.compareTo(this.timestamp);
+        if (timeDiff == 0) {
+            int priceDiff = o.getPrice().compareTo(this.price);
+            if (priceDiff == 0) {
+                return o.getVolume().compareTo(this.volume);
+            }
+            return priceDiff;
+        }
+        return timeDiff;
     }
 
     @Override

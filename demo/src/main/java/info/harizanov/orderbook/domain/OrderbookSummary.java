@@ -31,8 +31,6 @@ public class OrderbookSummary {
         lastUpdated = new Date(Long.max(
                         asks.stream().findFirst().get().getTimestamp().longValue() * 1000,
                         bids.stream().findFirst().get().getTimestamp().longValue() * 1000));
-
-        System.out.println(this);
     }
 
     public Set<PriceLevel> getAsks() {

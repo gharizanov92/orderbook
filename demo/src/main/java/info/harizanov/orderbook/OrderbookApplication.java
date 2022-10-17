@@ -35,7 +35,7 @@ public class OrderbookApplication implements ApplicationRunner {
 
         krakenTemplate.getBookFeed()
                 .doOnNext(update -> orderBook.computeIfAbsent(update.getT1(), OrderbookSummary::new).update(update.getT2()))
-//                .doOnNext(System.out::println)
+                .doOnNext(update -> System.out.println(orderBook.computeIfAbsent(update.getT1(), OrderbookSummary::new)))
                 .blockLast();
     }
 }
