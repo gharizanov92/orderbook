@@ -18,12 +18,12 @@ public class OrderbookApplication implements ApplicationRunner {
 
     private final KrakenTemplate krakenTemplate;
 
-    public OrderbookApplication(KrakenTemplate krakenTemplate) {
-        this.krakenTemplate = krakenTemplate;
-    }
-
     public static void main(String[] args) {
         SpringApplication.run(OrderbookApplication.class, args);
+    }
+
+    public OrderbookApplication(KrakenTemplate krakenTemplate) {
+        this.krakenTemplate = krakenTemplate;
     }
 
     @Override
@@ -36,12 +36,5 @@ public class OrderbookApplication implements ApplicationRunner {
         krakenTemplate.getBookFeed()
                 .doOnNext(update -> orderBook.computeIfAbsent(update.getT1(), OrderbookSummary::new).update(update.getT2()))
                 .blockLast();
-
-//        krakenTemplate.getBookFeed()
-//                .filter(update -> update.getT1().equalsIgnoreCase(ethOrderBook.getExchange()))
-//                .doOnNext(update -> ethOrderBook.update(update.getT2()))
-//                .subscribe();
-
-//        krakenTemplate.getHeartBeatFeed().doOnNext(System.out::println).blockLast();
     }
 }

@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken;
 import info.harizanov.orderbook.domain.message.request.KrakenCurrency;
 import info.harizanov.orderbook.domain.message.request.KrakenSubscribeMessage;
 import jakarta.websocket.Encoder;
-import org.glassfish.grizzly.utils.Pair;
 import reactor.util.function.Tuple2;
 
 import java.util.List;

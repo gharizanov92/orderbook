@@ -18,13 +18,6 @@ class TradeMessageTest {
     public static final Gson GSON = new Gson();
 
     @Test
-    public void test() {
-        final String json = "[561,[[\"1283.20000\",\"3.46552000\",\"1665856386.273855\",\"s\",\"m\",\"\"],[\"1283.20000\",\"1.00000000\",\"1665856386.274852\",\"s\",\"m\",\"\"],[\"1283.20000\",\"5.00000000\",\"1665856386.275669\",\"s\",\"m\",\"\"],[\"1283.03000\",\"0.53188000\",\"1665856386.277758\",\"s\",\"m\",\"\"]],\"trade\",\"ETH/USD\"]";
-        final Tuple4<Integer, List<List<String>>, String, String> data =
-                GSON.fromJson(json, new TypeToken<Tuple4<Integer, List<List<String>>, String, String>>() {}.getType());
-    }
-
-    @Test
     void testParse_whenTradeMessage_willReturnExchangeTuple() {
         // given
         final String exchange = "ETH/USD";

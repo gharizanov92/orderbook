@@ -1,20 +1,15 @@
 package info.harizanov.orderbook.domain.message.response;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import reactor.util.function.Tuple2;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class BookMessageTest {
-
-    public static final Gson GSON = new Gson();
 
     @Test
     void testParseSnapshot_whenBookMessage_willReturnExchangeTuple() {

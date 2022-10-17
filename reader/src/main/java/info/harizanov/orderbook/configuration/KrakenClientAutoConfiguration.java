@@ -92,7 +92,6 @@ public class KrakenClientAutoConfiguration {
 
     @EventListener(LostConnectionEvent.class)
     public void onApplicationEvent(LostConnectionEvent event) {
-//        System.out.println();
          beanFactory.getBean(KrakenTemplate.class).reconnect();
     }
 }

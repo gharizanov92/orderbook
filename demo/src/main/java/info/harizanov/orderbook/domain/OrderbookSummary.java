@@ -35,15 +35,6 @@ public class OrderbookSummary {
         System.out.println(this);
     }
 
-//    public void update(TradeMessage tradeMessage) {
-//        tradeMessage.getPrice().forEach(asks::add);
-//        bookMessage.getBids().forEach(bids::add);
-//
-//        bestAsk =  asks.stream().map(PriceLevel::getPrice).max(BigDecimal::compareTo).orElse(new BigDecimal(0));
-//        bestBid =  bids.stream().map(PriceLevel::getPrice).max(BigDecimal::compareTo).orElse(new BigDecimal(0));
-//    }
-
-
     public Set<PriceLevel> getAsks() {
         return asks;
     }

@@ -40,6 +40,7 @@ public class KrakenTemplate {
                           final WebSocketContainer container, final Sinks.Many<String> sink,
                           final ApplicationEventPublisher applicationEventPublisher) {
         this.sink = sink;
+        // TODO: config
         this.sessionProvider = new SessionProvider("wss://ws.kraken.com", endpoint, clientEndpointConfig, container);
         this.applicationEventPublisher = applicationEventPublisher;
         this.sessionProvider.connect();
@@ -52,11 +53,11 @@ public class KrakenTemplate {
                 })
                 .subscribe(detachedSubscriptions ->
                         Mono.delay(Duration.of(3, ChronoUnit.SECONDS)).then(sessionProvider.connect())
-                            .doOnTerminate(() -> {
-                                logger.error("Unable to establish connection, attempting to reconnect..");
-                                applicationEventPublisher.publishEvent(new LostConnectionEvent());
-                            })
-                            .subscribe(session -> session.getAsyncRemote().sendObject(detachedSubscriptions))
+                                .doOnTerminate(() -> {
+                                    logger.error("Unable to establish connection, attempting to reconnect..");
+                                    applicationEventPublisher.publishEvent(new LostConnectionEvent());
+                                })
+                                .subscribe(session -> session.getAsyncRemote().sendObject(detachedSubscriptions))
                 );
     }
 
@@ -66,11 +67,15 @@ public class KrakenTemplate {
 
     @SuppressWarnings("unchecked")
     public void subscribeForExchange(Tuple2<KrakenCurrency, KrakenCurrency> exchange, SubscriptionType subscriptionType) {
-
-        final KrakenSubscribeMessage subscribeMessage = KrakenSubscribeMessage
+        subscribeForExchange(exchange, KrakenSubscribeMessage
                 .builder(KrakenSubscription.builder(subscriptionType).build())
                 .pairs(exchange)
-                .build();
+                .build());
+    }
+
+    @SuppressWarnings("unchecked")
+    public void subscribeForExchange(final Tuple2<KrakenCurrency, KrakenCurrency> exchange,
+                                     final KrakenSubscribeMessage subscribeMessage) {
         subscriptions.add(subscribeMessage);
 
         sessionProvider.getSession()
@@ -83,9 +88,10 @@ public class KrakenTemplate {
     }
 
     public void unsubscribeForExchange(List<Tuple2<KrakenCurrency, KrakenCurrency>> currencies) {
-
+        // TODO
     }
 
+    // TODO: reconnect if haven't received in a while
     public Flux<KrakenEventMessage> getHeartBeatFeed() {
         ensureAtLeastOneSubscriptionIsPresent();
         return getEventFeed().filter(e -> "heartbeat".equalsIgnoreCase(e.getEvent()));

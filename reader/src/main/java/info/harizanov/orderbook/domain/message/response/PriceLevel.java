@@ -9,7 +9,6 @@ public class PriceLevel implements Comparable<PriceLevel> {
     private BigDecimal price;
     private BigDecimal volume;
     private BigDecimal timestamp;
-
     private String updateType;
 
     public static PriceLevel fromTokens(final List<String> args) {

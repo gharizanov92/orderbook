@@ -9,6 +9,7 @@ import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.websocket.CloseReason.CloseCodes.NORMAL_CLOSURE;
@@ -19,7 +20,7 @@ public class KrakenEndpoint extends Endpoint {
 
     private Sinks.Many<String> producer = Sinks.many().replay().limit(Duration.ofDays(1));
 
-    private List<MessageHandler> handlers;
+    private List<MessageHandler> handlers = new ArrayList<>();
 
     private final ApplicationEventPublisher applicationEventPublisher;
 

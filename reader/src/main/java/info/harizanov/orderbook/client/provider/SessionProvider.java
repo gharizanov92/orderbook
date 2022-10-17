@@ -1,19 +1,14 @@
 package info.harizanov.orderbook.client.provider;
 
 import info.harizanov.orderbook.client.KrakenEndpoint;
-import info.harizanov.orderbook.template.KrakenTemplate;
 import jakarta.websocket.ClientEndpointConfig;
-import jakarta.websocket.DeploymentException;
 import jakarta.websocket.Session;
 import jakarta.websocket.WebSocketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.net.URI;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 
 public class SessionProvider {
 

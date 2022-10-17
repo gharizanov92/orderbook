@@ -6,9 +6,7 @@ import info.harizanov.orderbook.domain.message.request.EventType;
 import info.harizanov.orderbook.domain.message.request.KrakenSubscribeMessage;
 import info.harizanov.orderbook.domain.message.request.KrakenSubscription;
 import info.harizanov.orderbook.domain.message.request.SubscriptionType;
-import org.glassfish.grizzly.utils.Pair;
 import org.junit.jupiter.api.Test;
-import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.util.List;
@@ -36,7 +34,8 @@ class KrakenSubscribeMessageEncoderTest {
 
         // then
         final Map<String, Object> subscriptionMessage = gson.fromJson(encoded,
-                new TypeToken<Map<String, Object>>() {}.getType());
+                new TypeToken<Map<String, Object>>() {
+                }.getType());
 
         assertThat(subscriptionMessage.get("event"), is(EventType.SUBSCRIBE.toString().toLowerCase()));
         assertThat(subscriptionMessage.get("pair"), notNullValue());

@@ -90,25 +90,7 @@ public class BookMessage {
                                     return current;
                                 })
                 );
-                /*final LinkedTreeMap<String, List<List<String>>> tokens = (LinkedTreeMap<String, List<List<String>>>) data.get(1);
-
-                bookMessage.setAsks(
-                        tokens.get("as")
-                                .stream()
-                                .map(PriceLevel::fromTokens)
-                                .toList()
-                );
-
-                bookMessage.setBids(
-                        tokens.get("bs")
-                                .stream()
-                                .map(PriceLevel::fromTokens)
-                                .toList()
-                );
-
-                return Flux.just(name).zipWith(Flux.just(bookMessage));*/
             }
-            // ArrayList<String> data = GSON.fromJson(json, new ArrayList<String>(){}.getType());
             return Flux.empty();
         } catch (Exception e) {
             return Flux.empty();
