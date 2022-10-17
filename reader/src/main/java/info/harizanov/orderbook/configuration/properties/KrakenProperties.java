@@ -9,6 +9,8 @@ public class KrakenProperties {
     private String url;
     private Integer reconnectInterval;
 
+    private Integer maxIdleTime;
+
     public String getUrl() {
         return url;
     }
@@ -23,5 +25,13 @@ public class KrakenProperties {
 
     public void setReconnectInterval(Integer reconnectInterval) {
         this.reconnectInterval = reconnectInterval;
+    }
+
+    public Integer getMaxIdleTime() {
+        return maxIdleTime;
+    }
+
+    public void setMaxIdleTime(Integer maxIdleTime) {
+        this.maxIdleTime = maxIdleTime;
     }
 }

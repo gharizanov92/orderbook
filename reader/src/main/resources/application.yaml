@@ -6,3 +6,4 @@ logging:
 kraken:
   url: wss://ws.kraken.com
   reconnect-interval: 1000
+  max-idle-time: 3000

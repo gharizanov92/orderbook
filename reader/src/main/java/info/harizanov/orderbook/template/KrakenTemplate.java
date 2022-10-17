@@ -1,6 +1,5 @@
 package info.harizanov.orderbook.template;
 
-import info.harizanov.orderbook.client.KrakenEndpoint;
 import info.harizanov.orderbook.client.provider.SessionSupplier;
 import info.harizanov.orderbook.configuration.properties.KrakenProperties;
 import info.harizanov.orderbook.domain.message.request.*;
@@ -10,9 +9,7 @@ import info.harizanov.orderbook.domain.message.response.SubscriptionMessage;
 import info.harizanov.orderbook.domain.message.response.TradeMessage;
 import info.harizanov.orderbook.event.LostConnectionEvent;
 import info.harizanov.orderbook.util.Holder;
-import jakarta.websocket.ClientEndpointConfig;
 import jakarta.websocket.CloseReason;
-import jakarta.websocket.WebSocketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,7 +31,7 @@ public class KrakenTemplate {
 
     private final Logger logger = LoggerFactory.getLogger(KrakenTemplate.class);
 
-    protected final SessionSupplier sessionProvider;
+    protected final SessionSupplier sessionSupplier;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -44,30 +41,31 @@ public class KrakenTemplate {
 
     private Holder<Instant> lastHeartbeat = Holder.lazyHolder(Instant::now);
 
-    public KrakenTemplate(final KrakenEndpoint endpoint, final KrakenProperties krakenProperties,
-                          final ClientEndpointConfig clientEndpointConfig,
-                          final WebSocketContainer container, final Sinks.Many<String> sink,
+    public KrakenTemplate(final KrakenProperties krakenProperties,
+                          final SessionSupplier sessionSupplier,
+                          final Sinks.Many<String> sink,
                           final ApplicationEventPublisher applicationEventPublisher) {
+        this.sessionSupplier = sessionSupplier;
         this.sink = sink;
         this.krakenProperties = krakenProperties;
-        this.sessionProvider = new SessionSupplier(krakenProperties.getUrl(), endpoint, clientEndpointConfig, container);
         this.applicationEventPublisher = applicationEventPublisher;
-        this.sessionProvider.connect();
-        ensureConnectionStaysAlive();
+
+        this.sessionSupplier.connect();
+        this.ensureConnectionStaysAlive();
     }
 
     public void reconnect() {
-        sessionProvider.get()
+        sessionSupplier.get()
                 .doOnNext(session -> {
                     try {
                         if (session.isOpen()) {
-                            session.close(new CloseReason(NORMAL_CLOSURE, "Manual reconnect"));
+                            session.close(new CloseReason(NORMAL_CLOSURE, "Expired"));
                         }
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 })
-                .thenMany(Flux.fromIterable(subscriptions).zipWith(sessionProvider.connect().repeat()))
+                .thenMany(Flux.fromIterable(subscriptions).zipWith(sessionSupplier.connect().repeat()))
                 .subscribe(tuple -> {
                     final KrakenSubscriptionMessage subscription = tuple.getT1();
                     tuple.getT2().getAsyncRemote().sendObject(subscription);
@@ -107,7 +105,7 @@ public class KrakenTemplate {
     public void subscribeFor(final KrakenSubscriptionMessage subscribeMessage) {
         subscriptions.add(subscribeMessage);
 
-        sessionProvider.get()
+        sessionSupplier.get()
                 .doOnError((any) -> {
                     logger.error("Lost connection to server, attempting to reconnect..");
                     publishReconnectEvent();
@@ -157,7 +155,8 @@ public class KrakenTemplate {
 
         Flux.generate(sink -> sink.next("")).delayElements(Duration.of(krakenProperties.getReconnectInterval(), ChronoUnit.MILLIS))
                 .subscribe(e -> {
-                    if (!subscriptions.isEmpty() && lastHeartbeat.get() != null && (Instant.now()).minus(5, ChronoUnit.SECONDS).isAfter(lastHeartbeat.get())) {
+                    if (!subscriptions.isEmpty() && lastHeartbeat.get() != null
+                            && (Instant.now()).minus(krakenProperties.getMaxIdleTime(), ChronoUnit.MILLIS).isAfter(lastHeartbeat.get())) {
                         lastHeartbeat.set(Instant.now());
                         publishReconnectEvent();
                     }
@@ -168,7 +167,7 @@ public class KrakenTemplate {
         }
     }
 
-    public SessionSupplier getSessionProvider() {
-        return sessionProvider;
+    public SessionSupplier getSessionSupplier() {
+        return sessionSupplier;
     }
 }
