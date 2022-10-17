@@ -3,7 +3,7 @@ package info.harizanov.orderbook.domain.message.encoder;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import info.harizanov.orderbook.domain.message.request.EventType;
-import info.harizanov.orderbook.domain.message.request.KrakenSubscribeMessage;
+import info.harizanov.orderbook.domain.message.request.KrakenSubscriptionMessage;
 import info.harizanov.orderbook.domain.message.request.KrakenSubscription;
 import info.harizanov.orderbook.domain.message.request.SubscriptionType;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class KrakenSubscribeMessageEncoderTest {
         // given
         final Gson gson = new Gson();
         final KrakenSubscribeMessageEncoder encoder = new KrakenSubscribeMessageEncoder();
-        final KrakenSubscribeMessage krakenSubscribeMessage = KrakenSubscribeMessage
+        final KrakenSubscriptionMessage krakenSubscribeMessage = KrakenSubscriptionMessage
                 .builder(KrakenSubscription.builder(SubscriptionType.TICKER).build())
                 .pairs(Tuples.of(USD, ETH), Tuples.of(USD, BTC))
                 .build();

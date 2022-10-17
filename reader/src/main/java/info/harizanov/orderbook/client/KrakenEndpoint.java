@@ -37,7 +37,6 @@ public class KrakenEndpoint extends Endpoint {
     @Override
     public void onClose(Session session, CloseReason closeReason) {
         logger.error("Connection closed {}", closeReason.toString());
-        applicationEventPublisher.publishEvent(new LostConnectionEvent());
     }
 
     @Override

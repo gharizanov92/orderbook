@@ -5,13 +5,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import info.harizanov.orderbook.domain.message.request.KrakenCurrency;
-import info.harizanov.orderbook.domain.message.request.KrakenSubscribeMessage;
+import info.harizanov.orderbook.domain.message.request.KrakenSubscriptionMessage;
 import jakarta.websocket.Encoder;
 import reactor.util.function.Tuple2;
 
 import java.util.List;
 
-public class KrakenSubscribeMessageEncoder implements Encoder.Text<KrakenSubscribeMessage> {
+public class KrakenSubscribeMessageEncoder implements Encoder.Text<KrakenSubscriptionMessage> {
     private static GsonBuilder gsonBuilder = new GsonBuilder();
 
     private static JsonSerializer<List<Tuple2<KrakenCurrency, KrakenCurrency>>> currencyPairSerializer =
@@ -31,7 +31,7 @@ public class KrakenSubscribeMessageEncoder implements Encoder.Text<KrakenSubscri
     }
 
     @Override
-    public String encode(KrakenSubscribeMessage krakenSubscribeMessage) {
+    public String encode(KrakenSubscriptionMessage krakenSubscribeMessage) {
         return gsonBuilder.create().toJson(krakenSubscribeMessage);
     }
 }

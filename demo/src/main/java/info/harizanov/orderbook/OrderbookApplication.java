@@ -30,11 +30,12 @@ public class OrderbookApplication implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         final Map<String, OrderbookSummary> orderBook = new HashMap<>();
 
-        krakenTemplate.subscribeForExchange(Tuples.of(KrakenCurrency.ETH, KrakenCurrency.USD), SubscriptionType.BOOK);
-        krakenTemplate.subscribeForExchange(Tuples.of(KrakenCurrency.BTC, KrakenCurrency.USD), SubscriptionType.BOOK);
+        krakenTemplate.subscribeFor(Tuples.of(KrakenCurrency.ETH, KrakenCurrency.USD), SubscriptionType.BOOK);
+        krakenTemplate.subscribeFor(Tuples.of(KrakenCurrency.BTC, KrakenCurrency.USD), SubscriptionType.BOOK);
 
         krakenTemplate.getBookFeed()
                 .doOnNext(update -> orderBook.computeIfAbsent(update.getT1(), OrderbookSummary::new).update(update.getT2()))
+//                .doOnNext(System.out::println)
                 .blockLast();
     }
 }

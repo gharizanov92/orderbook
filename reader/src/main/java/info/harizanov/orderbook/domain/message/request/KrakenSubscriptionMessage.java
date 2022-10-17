@@ -1,7 +1,6 @@
 package info.harizanov.orderbook.domain.message.request;
 
 import com.google.gson.annotations.SerializedName;
-import org.glassfish.grizzly.utils.Pair;
 import reactor.util.function.Tuple2;
 
 import java.util.Arrays;
@@ -15,13 +14,13 @@ import java.util.Objects;
  * Uses custom JSON Serializer
  * @see info.harizanov.orderbook.domain.message.encoder.KrakenSubscribeMessageEncoder
  */
-public class KrakenSubscribeMessage extends KrakenRequestMessage {
+public class KrakenSubscriptionMessage extends KrakenRequestMessage {
     @SerializedName("reqid")
     private Integer requestId;
     private List<Tuple2<KrakenCurrency, KrakenCurrency>> pair;
     private final KrakenSubscription subscription;
 
-    private KrakenSubscribeMessage(KrakenSubscription subscription) {
+    private KrakenSubscriptionMessage(KrakenSubscription subscription) {
         super(EventType.SUBSCRIBE);
         this.subscription = subscription;
     }
@@ -54,7 +53,7 @@ public class KrakenSubscribeMessage extends KrakenRequestMessage {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        KrakenSubscribeMessage that = (KrakenSubscribeMessage) o;
+        KrakenSubscriptionMessage that = (KrakenSubscriptionMessage) o;
         return Objects.equals(requestId, that.requestId) && Objects.equals(pair, that.pair) && Objects.equals(subscription, that.subscription);
     }
 
@@ -64,10 +63,10 @@ public class KrakenSubscribeMessage extends KrakenRequestMessage {
     }
 
     public static class KrakenSubscribeMessageBuilder {
-        private KrakenSubscribeMessage krakenSubscribeMessage;
+        private KrakenSubscriptionMessage krakenSubscribeMessage;
 
         private KrakenSubscribeMessageBuilder(final KrakenSubscription subscription) {
-            this.krakenSubscribeMessage = new KrakenSubscribeMessage(subscription);
+            this.krakenSubscribeMessage = new KrakenSubscriptionMessage(subscription);
         }
 
         public KrakenSubscribeMessageBuilder pairs(final Tuple2<KrakenCurrency, KrakenCurrency>... pairs) {
@@ -84,7 +83,12 @@ public class KrakenSubscribeMessage extends KrakenRequestMessage {
             return this;
         }
 
-        public KrakenSubscribeMessage build() {
+        public KrakenSubscribeMessageBuilder eveht(EventType eventType) {
+            krakenSubscribeMessage.setEvent(eventType);
+            return this;
+        }
+
+        public KrakenSubscriptionMessage build() {
             return krakenSubscribeMessage;
         }
     }
