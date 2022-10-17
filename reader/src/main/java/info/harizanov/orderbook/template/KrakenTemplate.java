@@ -2,6 +2,7 @@ package info.harizanov.orderbook.template;
 
 import info.harizanov.orderbook.client.KrakenEndpoint;
 import info.harizanov.orderbook.client.provider.SessionSupplier;
+import info.harizanov.orderbook.configuration.properties.KrakenProperties;
 import info.harizanov.orderbook.domain.message.request.*;
 import info.harizanov.orderbook.domain.message.response.BookMessage;
 import info.harizanov.orderbook.domain.message.response.KrakenEventMessage;
@@ -24,7 +25,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -39,16 +39,18 @@ public class KrakenTemplate {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     private final Sinks.Many<String> sink;
+    private final KrakenProperties krakenProperties;
     private Set<KrakenSubscriptionMessage> subscriptions = new HashSet<>();
 
     private Holder<Instant> lastHeartbeat = Holder.lazyHolder(Instant::now);
 
-    public KrakenTemplate(final KrakenEndpoint endpoint, final ClientEndpointConfig clientEndpointConfig,
+    public KrakenTemplate(final KrakenEndpoint endpoint, final KrakenProperties krakenProperties,
+                          final ClientEndpointConfig clientEndpointConfig,
                           final WebSocketContainer container, final Sinks.Many<String> sink,
                           final ApplicationEventPublisher applicationEventPublisher) {
         this.sink = sink;
-        // TODO: config
-        this.sessionProvider = new SessionSupplier("wss://ws.kraken.com", endpoint, clientEndpointConfig, container);
+        this.krakenProperties = krakenProperties;
+        this.sessionProvider = new SessionSupplier(krakenProperties.getUrl(), endpoint, clientEndpointConfig, container);
         this.applicationEventPublisher = applicationEventPublisher;
         this.sessionProvider.connect();
         ensureConnectionStaysAlive();
@@ -151,37 +153,9 @@ public class KrakenTemplate {
     }
 
     private void ensureConnectionStaysAlive() {
-        // if (subscriptions.isEmpty()) {
-        getHeartBeatFeed()
-                .subscribe(h -> lastHeartbeat.set(Instant.now()));
-/*
-        getHeartBeatFeed()
-                .map(h -> Instant.now())
-                .zipWith(Flux.push(sink -> sink.next(Instant.now())).delayElements(Duration.of(1, ChronoUnit.SECONDS)))
-                .filter(tuple -> tuple.getT1().plus(10, ChronoUnit.SECONDS).isBefore((Instant) tuple.getT2()))
-                .subscribe(s -> {
-                    System.out.println(s);
-                });
+        getHeartBeatFeed().subscribe(h -> lastHeartbeat.set(Instant.now()));
 
-*//*
-        Flux.generate(sink -> sink.next(Instant.now())).delayElements(Duration.of(1, ChronoUnit.SECONDS))
-                .mergeWith(getHeartBeatFeed().map(h -> Instant.now()))
-//                .filter(tuple -> ((Instant)tuple.getT1()).isAfter(tuple.getT2().plus(10, ChronoUnit.SECONDS)))
-                .subscribe(s -> {
-                    System.out.println(s);
-                });
-
-
-        Flux.combineLatest(
-                Flux.generate(sink -> sink.next(Instant.now())).delayElements(Duration.of(1, ChronoUnit.SECONDS)),
-                getHeartBeatFeed().map(h -> Instant.now()),
-                (a, b) -> {
-                    System.out.println(a);
-                    return a;
-                }
-        );*/
-
-        Flux.generate(sink -> sink.next("")).delayElements(Duration.of(1, ChronoUnit.SECONDS))
+        Flux.generate(sink -> sink.next("")).delayElements(Duration.of(krakenProperties.getReconnectInterval(), ChronoUnit.MILLIS))
                 .subscribe(e -> {
                     if (!subscriptions.isEmpty() && lastHeartbeat.get() != null && (Instant.now()).minus(5, ChronoUnit.SECONDS).isAfter(lastHeartbeat.get())) {
                         lastHeartbeat.set(Instant.now());
@@ -189,18 +163,9 @@ public class KrakenTemplate {
                     }
                 });
 
-/*        Flux.interval(Duration.of(1, ChronoUnit.SECONDS))
-                .subscribe(e -> {
-                    if (!subscriptions.isEmpty() && lastHeartbeat != null && Instant.now().plus(5, ChronoUnit.SECONDS).isAfter(lastHeartbeat.get())) {
-                        lastHeartbeat.set(null);
-                        publishReconnectEvent();
-                    }
-                });*/
-
         if (subscriptions.isEmpty()) {
             logger.warn("There are no active subscriptions");
         }
-        // }
     }
 
     public SessionSupplier getSessionProvider() {

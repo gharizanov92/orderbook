@@ -3,3 +3,6 @@ logging:
     info:
       harizanov:
         orderbook: info
+kraken:
+  url: wss://ws.kraken.com
+  reconnect-interval: 1000

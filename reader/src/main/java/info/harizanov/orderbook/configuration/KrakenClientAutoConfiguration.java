@@ -1,6 +1,7 @@
 package info.harizanov.orderbook.configuration;
 
 import info.harizanov.orderbook.client.KrakenEndpoint;
+import info.harizanov.orderbook.configuration.properties.KrakenProperties;
 import info.harizanov.orderbook.domain.message.encoder.KrakenSubscribeMessageEncoder;
 import info.harizanov.orderbook.event.LostConnectionEvent;
 import info.harizanov.orderbook.template.KrakenTemplate;
@@ -83,11 +84,12 @@ public class KrakenClientAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(KrakenTemplate.class)
-    public KrakenTemplate krakenTemplate(final KrakenEndpoint endpoint, final ClientEndpointConfig config,
+    public KrakenTemplate krakenTemplate(final KrakenEndpoint endpoint, final KrakenProperties krakenProperties,
+                                         final ClientEndpointConfig config,
                                          final WebSocketContainer container,
                                          final ApplicationEventPublisher applicationEventPublisher,
                                          @Qualifier("krakenWSSink") final Sinks.Many<String> sink) {
-        return new KrakenTemplate(endpoint, config, container, sink, applicationEventPublisher);
+        return new KrakenTemplate(endpoint, krakenProperties, config, container, sink, applicationEventPublisher);
     }
 
     @EventListener(LostConnectionEvent.class)
