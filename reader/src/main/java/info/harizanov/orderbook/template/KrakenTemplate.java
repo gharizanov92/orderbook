@@ -79,7 +79,7 @@ public class KrakenTemplate {
                     applicationEventPublisher.publishEvent(new LostConnectionEvent());
                 })
                 .subscribe(session -> session.getAsyncRemote().sendObject(subscribeMessage));
-        this.sink.asFlux().subscribe(logger::info);
+        this.sink.asFlux().subscribe(logger::debug);
     }
 
     public void unsubscribeForExchange(List<Tuple2<KrakenCurrency, KrakenCurrency>> currencies) {
@@ -87,23 +87,39 @@ public class KrakenTemplate {
     }
 
     public Flux<KrakenEventMessage> getHeartBeatFeed() {
+        ensureAtLeastOneSubscriptionIsPresent();
         return getEventFeed().filter(e -> "heartbeat".equalsIgnoreCase(e.getEvent()));
     }
 
     public Flux<SubscriptionMessage> getSubscriptionMessageFeed() {
+        ensureAtLeastOneSubscriptionIsPresent();
         return sink.asFlux().flatMap(SubscriptionMessage::parse);
     }
 
     public Flux<KrakenEventMessage> getEventFeed() {
+        ensureAtLeastOneSubscriptionIsPresent();
         return sink.asFlux().flatMap(KrakenEventMessage::parse);
     }
 
     public Flux<KrakenEventMessage> getEventFeed(Predicate<KrakenEventMessage> filter) {
+        ensureAtLeastOneSubscriptionIsPresent();
         return getEventFeed().filter(filter);
     }
 
+    public Flux<Tuple2<String, BookMessage>> getBookFeed() {
+        ensureAtLeastOneSubscriptionIsPresent();
+        return sink.asFlux().flatMap(BookMessage::parse);
+    }
+
     public Flux<Tuple2<String, TradeMessage>> getTradeFeed() {
+        ensureAtLeastOneSubscriptionIsPresent();
         return sink.asFlux().flatMap(TradeMessage::parse);
+    }
+
+    private void ensureAtLeastOneSubscriptionIsPresent() {
+        if (subscriptions.isEmpty()) {
+            logger.warn("There are no active subscriptions");
+        }
     }
 
     public SessionProvider getSessionProvider() {

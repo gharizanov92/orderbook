@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import reactor.core.publisher.Mono;
 
 public class KrakenEventMessage {
-
     private Long connectionID;
     private String event;
     private String status;

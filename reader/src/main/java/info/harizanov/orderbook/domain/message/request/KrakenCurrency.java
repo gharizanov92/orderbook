@@ -4,5 +4,5 @@ public enum KrakenCurrency {
     USD,
     BTC,
     ETH,
-    XBT
+    DOGE
 }

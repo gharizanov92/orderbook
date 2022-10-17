@@ -7,6 +7,8 @@ import com.google.gson.reflect.TypeToken;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,10 +19,10 @@ public class BookMessage {
     public static final Gson GSON = new Gson();
 
     @SerializedName("as")
-    private List<PriceLevel> asks;
+    private List<PriceLevel> asks = new ArrayList<>();
 
     @SerializedName("bs")
-    private List<PriceLevel> bids;
+    private List<PriceLevel> bids = new ArrayList<>();
 
     public List<PriceLevel> getAsks() {
         return asks;
@@ -39,12 +41,56 @@ public class BookMessage {
     }
 
     public static Flux<Tuple2<String, BookMessage>> parse(String json) {
-        final BookMessage bookMessage = new BookMessage();
-        try {
-            final List<Object> data = GSON.fromJson(json, new TypeToken<List<Object>>() {}.getType());
 
-            if (("" + data.get(data.size() - 2)).matches("book-\\d+")) {
-                final LinkedTreeMap<String, List<List<String>>> tokens = (LinkedTreeMap<String, List<List<String>>>) data.get(1);
+        try {
+            final List<Object> data = GSON.fromJson(json, new TypeToken<List<Object>>() {
+            }.getType());
+
+            final String name = "" + data.get(data.size() - 2);
+            if (name.matches("book-\\d+")) {
+                return Flux.just("" + data.get(data.size() - 1)).zipWith(
+                        Flux.range(1, data.size() - 3)
+                                .map(idx -> (LinkedTreeMap<String, List<List<String>>>) data.get(idx))
+                                .map(tokens -> {
+                                    final BookMessage bookMessage = new BookMessage();
+
+                                    bookMessage.getAsks().addAll(
+                                            tokens.getOrDefault("as", Collections.emptyList())
+                                                    .stream()
+                                                    .map(PriceLevel::fromTokens)
+                                                    .toList()
+                                    );
+
+                                    bookMessage.getAsks().addAll(
+                                            tokens.getOrDefault("a", Collections.emptyList())
+                                                    .stream()
+                                                    .map(PriceLevel::fromTokens)
+                                                    .toList()
+                                    );
+
+                                    bookMessage.getBids().addAll(
+                                            tokens.getOrDefault("bs", Collections.emptyList())
+                                                    .stream()
+                                                    .map(PriceLevel::fromTokens)
+                                                    .toList()
+                                    );
+
+                                    bookMessage.getBids().addAll(
+                                            tokens.getOrDefault("b", Collections.emptyList())
+                                                    .stream()
+                                                    .map(PriceLevel::fromTokens)
+                                                    .toList()
+                                    );
+
+                                    return bookMessage;
+                                })
+                                .reduce(new BookMessage(), (current, next) -> {
+                                    current.getAsks().addAll(next.getAsks());
+                                    current.getBids().addAll(next.getBids());
+                                    return current;
+                                })
+                );
+                /*final LinkedTreeMap<String, List<List<String>>> tokens = (LinkedTreeMap<String, List<List<String>>>) data.get(1);
 
                 bookMessage.setAsks(
                         tokens.get("as")
@@ -60,12 +106,20 @@ public class BookMessage {
                                 .toList()
                 );
 
-                return Flux.just("" + data.get(3)).zipWith(Flux.just(bookMessage));
+                return Flux.just(name).zipWith(Flux.just(bookMessage));*/
             }
             // ArrayList<String> data = GSON.fromJson(json, new ArrayList<String>(){}.getType());
             return Flux.empty();
         } catch (Exception e) {
             return Flux.empty();
         }
+    }
+
+    @Override
+    public String toString() {
+        return "BookMessage{" +
+                "asks=" + asks +
+                ", bids=" + bids +
+                '}';
     }
 }

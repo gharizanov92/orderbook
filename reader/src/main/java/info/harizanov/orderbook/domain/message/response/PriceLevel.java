@@ -3,8 +3,9 @@ package info.harizanov.orderbook.domain.message.response;
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
-public class PriceLevel {
+public class PriceLevel implements Comparable<PriceLevel> {
     private BigDecimal price;
     private BigDecimal volume;
     private BigDecimal timestamp;
@@ -47,5 +48,29 @@ public class PriceLevel {
 
     public void setTimestamp(BigDecimal timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PriceLevel that = (PriceLevel) o;
+        return Objects.equals(price, that.price) && Objects.equals(volume, that.volume) && Objects.equals(timestamp, that.timestamp) && Objects.equals(updateType, that.updateType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(price, volume, timestamp, updateType);
+    }
+
+    @Override
+    public int compareTo(PriceLevel o) {
+        return o.timestamp.compareTo(this.timestamp);
+    }
+
+    @Override
+    public String toString() {
+        return "[ " + price +
+                ", " + volume + " ]";
     }
 }

@@ -53,14 +53,20 @@ class BookMessageTest {
     @Test
     void testParseUpdate_whenBookMessage_willNotWorkBecauseNotSupportedYet() {
         // given
+        final String exchange = "XBT/USD";
+
+        final String firstAskStr = "1283.44000\",\"48.65356418\",\"1665856325.437481";
+        final String firstBidStr = "1283.43000\",\"5.67410000\",\"1665856324.985065";
+
+        final PriceLevel firstAsk = PriceLevel.fromTokens(Arrays.asList(firstAskStr.split("\",\"")));
+        final PriceLevel firstBid = PriceLevel.fromTokens(Arrays.asList(firstBidStr.split("\",\"")));
+
         final String json = "[\n" +
                 "  1234,\n" +
                 "  {\n" +
                 "    \"a\": [\n" +
                 "      [\n" +
-                "        \"5541.30000\",\n" +
-                "        \"2.50700000\",\n" +
-                "        \"1534614248.456738\"\n" +
+                "        \"" + firstAskStr + "\"\n" +
                 "      ],\n" +
                 "      [\n" +
                 "        \"5542.50000\",\n" +
@@ -72,22 +78,42 @@ class BookMessageTest {
                 "  {\n" +
                 "    \"b\": [\n" +
                 "      [\n" +
-                "        \"5541.30000\",\n" +
-                "        \"0.00000000\",\n" +
-                "        \"1534614335.345903\"\n" +
+                "        \"" + firstBidStr + "\"\n" +
                 "      ]\n" +
                 "    ],\n" +
                 "    \"c\": \"974942666\"\n" +
                 "  },\n" +
                 "  \"book-10\",\n" +
-                "  \"XBT/USD\"\n" +
+                "  \"" + exchange + "\"\n" +
                 "]";
 
         // when
         final var message = BookMessage.parse(json);
 
+        Tuple2<String, BookMessage> objects = BookMessage.parse(json).blockLast();
         // then
-        StepVerifier.create(message).expectNextCount(0).verifyComplete();
+        StepVerifier.create(message)
+                .assertNext(tuple -> {
+                    assertThat(tuple.getT1()).isEqualTo(exchange);
+                    final var payload = tuple.getT2();
+                    assertThat(payload.getAsks()).hasSize(2);
+                    assertThat(payload.getBids()).hasSize(1);
+
+                    final PriceLevel actualFirstAsk = payload.getAsks().get(0);
+                    final PriceLevel actualFirstBid = payload.getBids().get(0);
+
+                    assertThat(actualFirstAsk.getPrice()).isEqualTo(firstAsk.getPrice());
+                    assertThat(actualFirstAsk.getTimestamp()).isEqualTo(firstAsk.getTimestamp());
+                    assertThat(actualFirstAsk.getVolume()).isEqualTo(firstAsk.getVolume());
+
+                    assertThat(actualFirstBid.getPrice()).isEqualTo(firstBid.getPrice());
+                    assertThat(actualFirstBid.getTimestamp()).isEqualTo(firstBid.getTimestamp());
+                    assertThat(actualFirstBid.getVolume()).isEqualTo(firstBid.getVolume());
+
+                    System.out.println(tuple);
+                })
+//                .assertNext(tuple -> {})
+                .verifyComplete();
     }
 
     @Test

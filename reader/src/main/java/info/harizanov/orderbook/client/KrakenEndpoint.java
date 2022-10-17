@@ -36,8 +36,6 @@ public class KrakenEndpoint extends Endpoint {
     @Override
     public void onClose(Session session, CloseReason closeReason) {
         logger.error("Connection closed {}", closeReason.toString());
-        producer.tryEmitComplete();
-        handlers.forEach(session::removeMessageHandler);
         applicationEventPublisher.publishEvent(new LostConnectionEvent());
     }
 
@@ -48,8 +46,8 @@ public class KrakenEndpoint extends Endpoint {
     }
 
     private void restartSession(Session session, Throwable err) {
-        handlers.forEach(session::removeMessageHandler);
         try {
+            handlers.forEach(session::removeMessageHandler);
             session.close(new CloseReason(NORMAL_CLOSURE, err.getMessage()));
         } catch (IOException e) {
             logger.error("Unable to close session", e);
